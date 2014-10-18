@@ -12,13 +12,13 @@ case class Order(unitCost: Double, quantity: Int) {
 
 object Order {
   val zero = Order(0, 0)
-  def add(o1: Order, o2: Order): Order =
+  def add(o1: Order, o2: => Order): Order =
     Order(
       (o1.totalCost + o2.totalCost) / (o1.quantity + o2.quantity),
       o1.quantity + o2.quantity
     )
 
-  implicit val orderInstance = Monoid.instance[Order](zero, add _)
+  implicit val orderInstance: Monoid[Order] = Monoid.instance[Order](add _, zero)
 }
 
 object Examples {
