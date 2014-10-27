@@ -7,5 +7,5 @@ val settings = Seq(
 )
 
 lazy val monoid = project.settings(settings:_*)
-
+lazy val functor = project.settings(settings:_*)
 lazy val monad = project.settings(settings:_*)
