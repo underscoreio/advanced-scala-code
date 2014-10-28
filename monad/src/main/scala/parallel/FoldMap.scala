@@ -1,5 +1,6 @@
 package parallel
 
+import scala.language.higherKinds
 import scala.collection.Iterable
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
@@ -12,7 +13,6 @@ import scalaz.syntax.monad._
 object FoldMap {
   def foldMap[A, B : Monoid](iter: Iterable[A])(f: A => B = (a: A) => a): B =
     foldMapM[A, Id, B](iter){ a => f(a).point[Id] }
-    //iter.foldLeft(mzero[B])(_ |+| f(_))
 
   def foldMapM[A, M[_] : Monad, B: Monoid](iter: Iterable[A])(f: A => M[B] = (a: A) => a.point[Id]): M[B] =
     iter.foldLeft(mzero[B].point[M]){ (accum, elt) =>
