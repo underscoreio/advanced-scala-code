@@ -46,4 +46,15 @@ object Timing {
     println(s"$msg took ${end - start} nanoseconds")
     result
   }
+
+  def examples = {
+    import scalaz.std.anyVal._
+    import scalaz.std.option._
+    import scalaz.std.list._
+
+    val seq = Seq(1, 2, 3)
+    seq.foldMapM(a => some(a))
+    seq.foldMapM(a => List(a))
+    seq.foldMap(a => if(a % 2 == 0) some(a) else none[Int])
+  }
 }

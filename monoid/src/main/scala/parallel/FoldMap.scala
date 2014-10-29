@@ -24,18 +24,20 @@ object FoldMap {
   }
 
   // Specialised implementation for arrays that doesn't copy
-  def foldMapP[A, B : Monoid](arr: Array[A])(f: A => B = (a: A) => a)(implicit ec: ExecutionContext): B = {
+  def foldMapP[A, B : Monoid](arr: Array[A])(f: A => B)(implicit ec: ExecutionContext): B = {
+    def iter(idx: Int, end: Int, result: B): B =
+      if(idx == end)
+        result
+      else
+        iter(idx + 1, end, result |+| f(arr(idx)))
+
     val nCores: Int = Runtime.getRuntime().availableProcessors()
     val groupSize: Int = (arr.size.toDouble / nCores.toDouble).ceil.round.toInt
 
     val futures =
       for(i <- 0 until nCores) yield {
         Future {
-          var result: B = mzero[B]
-          for(idx <- (i * groupSize) until (i * groupSize + groupSize)) {
-            result = result |+| f(arr(idx))
-          }
-          result
+          iter(i * groupSize, i * groupSize + groupSize, mzero[B])
         }
       }
     val result: Future[B] = Future.sequence(futures) map { iterable =>
@@ -67,7 +69,10 @@ object FoldMap {
 
 object Timing {
   import FoldMap._
-  import scala.concurrent.ExecutionContext.Implicits.global
+  //import scala.concurrent.ExecutionContext.Implicits.global
+  import java.util.concurrent.Executors
+  val threadPool = Executors.newFixedThreadPool(4)
+  implicit val ec = ExecutionContext.fromExecutor(threadPool)
 
   // Can we actually do work in parallel faster than in serial? Let's find out.
   def time[A](msg: String)(f: => A): A = {
