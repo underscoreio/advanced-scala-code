@@ -4,6 +4,7 @@ import scalaz.syntax.applicative._
 
 object ApplicativeExample {
   some(1) <*> some((x: Int) => x + 1)
+  some(1) <*> (some(2) <*> some((x: Int) => (y: Int) => x + y))
 
   (some(1) |@| some(2)){ _ + _ }
 }
