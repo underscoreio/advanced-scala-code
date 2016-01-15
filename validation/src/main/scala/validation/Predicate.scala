@@ -31,6 +31,19 @@ object predicate {
           }
       }
   }
+  object Predicate {
+    def apply[E,A](f: A => Validated[E,A]): Predicate[E,A] =
+      Pure(f)
+
+    def lift[E,A](msg: E)(pred: A => Boolean): Predicate[E,A] =
+      Pure { (a: A) =>
+        if(pred(a))
+          Validated.valid(a)
+        else
+          Validated.invalid(msg)
+      }
+  }
+
   final case class And[E,A](left: Predicate[E,A], right: Predicate[E,A]) extends Predicate[E,A]
   final case class Or[E,A](left: Predicate[E,A], right: Predicate[E,A]) extends Predicate[E,A]
   final case class Pure[E,A](f: A => Validated[E,A]) extends Predicate[E,A]
