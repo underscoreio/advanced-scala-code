@@ -21,3 +21,4 @@ lazy val free = project.settings(settings:_*)
 
 // Projects
 lazy val validation = project.settings(settings:_*)
+lazy val probability = project.settings(settings:_*)
