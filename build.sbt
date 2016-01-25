@@ -7,7 +7,8 @@ val settings = Seq(
   scalaVersion := "2.11.7",
   scalacOptions ++= Seq("-feature"),
   libraryDependencies ++= Seq(scalaz, scalazConcurrent, cats, scalaTest),
-  resolvers += Resolver.sonatypeRepo("snapshots")
+  resolvers ++= Seq(Resolver.sonatypeRepo("snapshots"), Resolver.sonatypeRepo("releases")),
+  addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
 )
 
 // Examples
