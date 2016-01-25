@@ -7,6 +7,7 @@ object predicate {
   import cats.syntax.monoidal._ // For |@|
 
   sealed trait Predicate[E,A] {
+    import Predicate._
     import cats.data.Validated._ // For Valid and Invalid
 
     def and(that: Predicate[E,A]): Predicate[E,A] =
@@ -32,6 +33,12 @@ object predicate {
       }
   }
   object Predicate {
+    import cats.{Monoidal,Semigroup}
+
+    final case class And[E,A](left: Predicate[E,A], right: Predicate[E,A]) extends Predicate[E,A]
+    final case class Or[E,A](left: Predicate[E,A], right: Predicate[E,A]) extends Predicate[E,A]
+    final case class Pure[E,A](f: A => Validated[E,A]) extends Predicate[E,A]
+
     def apply[E,A](f: A => Validated[E,A]): Predicate[E,A] =
       Pure(f)
 
@@ -43,8 +50,4 @@ object predicate {
           Validated.invalid(msg)
       }
   }
-
-  final case class And[E,A](left: Predicate[E,A], right: Predicate[E,A]) extends Predicate[E,A]
-  final case class Or[E,A](left: Predicate[E,A], right: Predicate[E,A]) extends Predicate[E,A]
-  final case class Pure[E,A](f: A => Validated[E,A]) extends Predicate[E,A]
 }
