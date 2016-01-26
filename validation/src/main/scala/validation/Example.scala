@@ -48,9 +48,8 @@ object example {
         case Array(name, domain) => (name, domain).validNel[String].toXor
         case other => "Must contain a single @ character".invalidNel[(String,String)].toXor
       }
-    } andThen Check[(String,String),(String,String)] { case (name, domain) =>
-        ((longerThan(0).run.apply(name)).toValidated |@|
-           (longerThan(3) and contains('.')).run.apply(domain).toValidated).tupled.toXor
+    } andThen Check[(String,String),(String,String)] {
+        (longerThan(0) zip (longerThan(3) and contains('.'))).run
     } map {
       case (name, domain) => s"${name}@${domain}"
     }

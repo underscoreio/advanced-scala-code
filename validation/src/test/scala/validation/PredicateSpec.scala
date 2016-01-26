@@ -57,5 +57,18 @@ class PredicateSpec extends WordSpec with Matchers with GeneratorDrivenPropertyC
         }
       }
     }
+
+    "combined with zip" must {
+      "fail if either component predicate fails" in {
+        forAll { (m: Int, n: Int) =>
+          (greaterThanMax zip noMoreThanMax)( (m,n) ).isInvalid should === (true)
+        }
+      }
+      "succeed if both component predicates succeed" in {
+        forAll { (m: Int, n: Int) =>
+          (noMoreThanMax zip noLessThanMin)( (m,n) ).isValid should === (true)
+        }
+      }
+    }
   }
 }
