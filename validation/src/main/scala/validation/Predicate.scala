@@ -2,7 +2,7 @@ package validation
 
 object predicate {
   import cats.Semigroup
-  import cats.data.Validated
+  import cats.data.{Validated,Xor}
   import cats.syntax.semigroup._ // For |+|
   import cats.syntax.monoidal._ // For |@|
 
@@ -15,6 +15,9 @@ object predicate {
 
     def or(that: Predicate[E,A]): Predicate[E,A] =
       Or(this, that)
+
+    def run(implicit s: Semigroup[E]): A => Xor[E,A] =
+      (a: A) => this.apply(a).toXor
 
     def apply(a: A)(implicit s: Semigroup[E]): Validated[E,A] =
       this match {
@@ -33,8 +36,6 @@ object predicate {
       }
   }
   object Predicate {
-    import cats.{Monoidal,Semigroup}
-
     final case class And[E,A](left: Predicate[E,A], right: Predicate[E,A]) extends Predicate[E,A]
     final case class Or[E,A](left: Predicate[E,A], right: Predicate[E,A]) extends Predicate[E,A]
     final case class Pure[E,A](f: A => Validated[E,A]) extends Predicate[E,A]

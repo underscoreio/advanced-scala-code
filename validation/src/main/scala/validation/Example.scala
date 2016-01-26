@@ -1,16 +1,22 @@
 package validation 
 
 object example {
-  import cats.data.{NonEmptyList,OneAnd,Validated}
+  import cats.data.{Kleisli,NonEmptyList,OneAnd,Validated,Xor}
   import cats.std.list._
+  import cats.std.function._
   import cats.syntax.monoidal._
   import cats.syntax.validated._
-  import check._
   import predicate._
 
   type Error = NonEmptyList[String]
   def error(s: String): NonEmptyList[String] =
     OneAnd(s, Nil)
+
+  type Result[A] = Xor[Error,A]
+  type Check[A,B] = Kleisli[Result,A,B]
+  // This constructor helps with type inference, which fails miserably in many cases below
+  def Check[A,B](f: A => Result[B]): Check[A,B] =
+    Kleisli(f)
 
   // Utilities. We could implement all the checks using regular expressions but
   // this shows off the compositionality of the library.
@@ -30,27 +36,28 @@ object example {
 
   // A username must contain at least four characters and consist entirely of
   // alphanumeric characters
-  val checkUsername: Check[Error,String,String] =
-    Check(longerThan(3) and alphanumeric)
+  val checkUsername: Check[String,String] =
+    Check((longerThan(3) and alphanumeric).run)
 
   // An email address must contain a single `@` sign. Split the string at the
   // `@`. The string to the left must not be empty. The string to the right must
   // be at least three characters long and contain a dot.
-  val checkEmailAddress: Check[Error,String,String] =
+  val checkEmailAddress: Check[String,String] =
     Check { (string: String) =>
       string split '@' match {
-        case Array(name, domain) => (name, domain).validNel[String]
-        case other => "Must contain a single @ character".invalidNel[(String,String)]
+        case Array(name, domain) => (name, domain).validNel[String].toXor
+        case other => "Must contain a single @ character".invalidNel[(String,String)].toXor
       }
-    } andThen Check[Error,(String,String),(String,String)] { case (name, domain) =>
-        ((longerThan(0))(name) |@| (longerThan(3) and contains('.'))(domain)).tupled
+    } andThen Check[(String,String),(String,String)] { case (name, domain) =>
+        ((longerThan(0).run.apply(name)).toValidated |@|
+           (longerThan(3) and contains('.')).run.apply(domain).toValidated).tupled.toXor
     } map {
       case (name, domain) => s"${name}@${domain}"
     }
 
   final case class User(name: String, email: String)
-  def makeUser(name: String, email: String): Validated[Error,User] =
-    (checkUsername(name) |@| checkEmailAddress(email)) map (User.apply _)
+  def makeUser(name: String, email: String): Xor[Error,User] =
+    (checkUsername.run(name) |@| checkEmailAddress.run(email)) map (User.apply _)
 
   def go() = {
     println(makeUser("Noel", "noel@underscore.io"))
