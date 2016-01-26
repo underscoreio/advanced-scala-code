@@ -62,5 +62,4 @@ object example {
     println(makeUser("Noel", "noel@underscore.io"))
     println(makeUser("", "noel@underscore@io"))
   }
-
 }
