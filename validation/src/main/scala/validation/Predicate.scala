@@ -1,10 +1,10 @@
 package validation
 
 object predicate {
-  import cats.{Monoidal,Semigroup}
+  import cats.Semigroup
   import cats.data.{Validated,Xor}
   import cats.syntax.semigroup._ // For |+|
-  import cats.syntax.monoidal._ // For |@|
+  import cats.syntax.cartesian._ // For |@|
 
   sealed trait Predicate[E,A] {
     import Predicate._

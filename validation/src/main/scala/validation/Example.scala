@@ -4,7 +4,7 @@ object example {
   import cats.data.{Kleisli,NonEmptyList,OneAnd,Validated,Xor}
   import cats.std.list._
   import cats.std.function._
-  import cats.syntax.monoidal._
+  import cats.syntax.cartesian._
   import cats.syntax.validated._
   import predicate._
 
